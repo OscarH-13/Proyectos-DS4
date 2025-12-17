@@ -1,0 +1,52 @@
+﻿@{
+    ViewBag.Title = "Reportes";
+}
+
+<div class="contenedor">
+    <h2 class="titulo">📈 Reporte de solicitudes</h2>
+    <div id="zonaReporte" class="zona"></div>
+</div>
+
+@section scripts{
+    <script>
+    async function cargarReporte() {
+        const resp = await fetch(`/api/solicitudes/resumen`);
+        const lista = await resp.json();
+
+        if (!lista || lista.length === 0) {
+            document.getElementById("zonaReporte").innerHTML = `<div class="tarjeta advertencia">Aún no hay solicitudes.</div>`;
+            return;
+        }
+
+        let html = `
+            <div class="tarjeta">
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Cantidad</th>
+                            <th>Última solicitud</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        lista.forEach(x => {
+            const fecha = new Date(x.UltimaSolicitud).toLocaleString();
+            html += `
+                <tr>
+                    <td>${x.Titulo}</td>
+                    <td><b>${x.Cantidad}</b></td>
+                    <td>${fecha}</td>
+                </tr>
+            `;
+        });
+
+        html += `</tbody></table></div>`;
+        document.getElementById("zonaReporte").innerHTML = html;
+    }
+
+    cargarReporte();
+    </script>
+}
+

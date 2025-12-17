@@ -1,0 +1,105 @@
+﻿@{
+    ViewBag.Title = "Biblioteca";
+}
+
+<div class="contenedor">
+    <h2 class="titulo">📚 Búsqueda de libros</h2>
+
+    <div class="buscador">
+        <input id="textoBusqueda" class="input" placeholder="Escribe el título o autor..." />
+        <button class="btn-principal" onclick="buscarLibros()">Buscar</button>
+    </div>
+
+    <div id="zonaResultado" class="zona"></div>
+
+    <div id="zonaSolicitud" class="zona" style="display:none;">
+        <h3>¿No está el libro? Solicítalo</h3>
+
+        <form onsubmit="enviarSolicitud(event)">
+            <div class="grid">
+                <input id="solTitulo" class="input" placeholder="Título *" required />
+                <input id="solAutor" class="input" placeholder="Autor" />
+                <input id="solAnio" class="input" type="number" placeholder="Año" />
+                <input id="solCategoria" class="input" placeholder="Categoría" />
+                <input id="solNombre" class="input" placeholder="Tu nombre" />
+                <input id="solCorreo" class="input" type="email" placeholder="Tu correo" />
+            </div>
+
+            <textarea id="solComentario" class="input" rows="3" placeholder="Comentario (opcional)"></textarea>
+
+            <button class="btn-secundario" type="submit">Enviar solicitud</button>
+            <div id="mensajeSolicitud" class="mensaje"></div>
+        </form>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+    function limpiarZonas() {
+        document.getElementById("zonaResultado").innerHTML = "";
+        document.getElementById("zonaSolicitud").style.display = "none";
+        document.getElementById("mensajeSolicitud").innerText = "";
+    }
+
+    async function buscarLibros() {
+        limpiarZonas();
+
+        const texto = document.getElementById("textoBusqueda").value.trim();
+        if (!texto) return;
+
+        const resp = await fetch(`/api/libros?texto=${encodeURIComponent(texto)}`);
+        const libros = await resp.json();
+
+        const zona = document.getElementById("zonaResultado");
+
+        if (!libros || libros.length === 0) {
+            zona.innerHTML = `<div class="tarjeta advertencia">No se encontraron libros con: <b>${texto}</b></div>`;
+            document.getElementById("zonaSolicitud").style.display = "block";
+            document.getElementById("solTitulo").value = texto;
+            return;
+        }
+
+        let html = "";
+        libros.forEach(l => {
+            const estadoClase = l.Disponible ? "ok" : "no";
+            const estadoTexto = l.Disponible ? "Disponible" : "No disponible";
+            html += `
+                <div class="tarjeta">
+                    <div class="fila">
+                        <div>
+                            <div class="libro-titulo">${l.Titulo}</div>
+                            <div class="libro-detalle">${l.Autor} • ${l.AnioPublicacion ?? "Año N/D"} • ${l.Categoria}</div>
+                        </div>
+                        <div class="estado ${estadoClase}">${estadoTexto}</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        zona.innerHTML = html;
+    }
+
+    async function enviarSolicitud(e) {
+        e.preventDefault();
+
+        const solicitud = {
+            Titulo: document.getElementById("solTitulo").value.trim(),
+            Autor: document.getElementById("solAutor").value.trim(),
+            AnioPublicacion: document.getElementById("solAnio").value ? parseInt(document.getElementById("solAnio").value) : null,
+            Categoria: document.getElementById("solCategoria").value.trim(),
+            NombreSolicitante: document.getElementById("solNombre").value.trim(),
+            CorreoSolicitante: document.getElementById("solCorreo").value.trim(),
+            Comentario: document.getElementById("solComentario").value.trim()
+        };
+
+        const resp = await fetch(`/api/solicitudes`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(solicitud)
+        });
+
+        const data = await resp.json();
+        document.getElementById("mensajeSolicitud").innerText = data.mensaje || "Listo.";
+    }
+    </script>
+}

@@ -1,0 +1,38 @@
+CREATE DATABASE BibliotecaDB;
+GO
+USE BibliotecaDB;
+GO
+
+CREATE TABLE dbo.Libros (
+    LibroId INT IDENTITY(1,1) PRIMARY KEY,
+    Titulo NVARCHAR(200) NOT NULL,
+    Autor NVARCHAR(150) NOT NULL,
+    AnioPublicacion INT NULL,
+    Categoria NVARCHAR(100) NOT NULL,
+    Disponible BIT NOT NULL DEFAULT(1)
+);
+GO
+
+CREATE TABLE dbo.Solicitudes (
+    SolicitudId INT IDENTITY(1,1) PRIMARY KEY,
+    Titulo NVARCHAR(200) NOT NULL,
+    Autor NVARCHAR(150) NULL,
+    AnioPublicacion INT NULL,
+    Categoria NVARCHAR(100) NULL,
+    NombreSolicitante NVARCHAR(120) NULL,
+    CorreoSolicitante NVARCHAR(120) NULL,
+    Comentario NVARCHAR(500) NULL,
+    FechaSolicitud DATETIME2 NOT NULL DEFAULT(SYSDATETIME())
+);
+GO
+
+INSERT INTO dbo.Libros (Titulo, Autor, AnioPublicacion, Categoria, Disponible) VALUES
+(N'Cien años de soledad', N'Gabriel García Márquez', 1967, N'Novela', 1),
+(N'El principito', N'Antoine de Saint-Exupéry', 1943, N'Fábula', 1),
+(N'1984', N'George Orwell', 1949, N'Distopía', 0),
+(N'Don Quijote de la Mancha', N'Miguel de Cervantes', 1605, N'Clásico', 1),
+(N'La Odisea', N'Homero', NULL, N'Épica', 0),
+(N'Clean Code', N'Robert C. Martin', 2008, N'Programación', 1),
+(N'El alquimista', N'Paulo Coelho', 1988, N'Novela', 1),
+(N'Fahrenheit 451', N'Ray Bradbury', 1953, N'Distopía', 1);
+GO
